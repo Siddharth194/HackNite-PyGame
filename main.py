@@ -1,5 +1,5 @@
 import pygame
-from config import *
+from config import * #long variable names written in caps are mostly imported from config
 from basicfuncs import *
 from LoadingScreen import *
 from images import *
@@ -12,19 +12,23 @@ pygame.display.set_caption("HackNite Project")
 
 
 class Player(pygame.sprite.Sprite):
-
     def __init__(self, x, y, width, height):
         super().__init__()
 
         self.rect = pygame.Rect(x,y,width,height)
         self.width = width
         self.height = height
+        self.direction = "front"
         self.mask = None
-        self.image = pygame.surface((width,height),pygame.SRCALPHA)
+        self.image = pygame.Surface((width,height),pygame.SRCALPHA)
+        self.animationcount = 0
+        self.hp = 8
 
     def draw(self,WIN):
 
-        WIN.blit(self.image, (self.rect.x,self.rect.y))
+        None
+        #pygame.draw.rect(WIN,self.colour,self.rect)
+        WIN.blit(self.currentsprite, (self.rect.x,self.rect.y))
 
     def move_up(self):
 
@@ -44,23 +48,48 @@ class Player(pygame.sprite.Sprite):
     def move_right(self):
 
         self.rect.x += PLAYERVELOCITY
-        self.direction = "right"    
+        self.direction = "right"
+        
+    def update_sprite(self,keypress):
 
-def handlemovemenets(player):
+        if self.direction == "up":
+            spriteindex = 3
+        elif self.direction == "down":
+            spriteindex = 2
+        elif self.direction == "left":
+            spriteindex = 0
+        else:
+            spriteindex = 1
+        
+        if keypress:
+            if self.animationcount < 9*PLAYERSPEED - 1:
+                self.animationcount += 1
+            else:
+                self.animationcount = 0
+
+        self.currentsprite = movementimgs[spriteindex][self.animationcount//PLAYERSPEED]
+
+def handlemovements(player):
 
     keys = pygame.key.get_pressed()
 
     if keys[pygame.K_d]:
         player.move_right()
+        return True
     
     if keys[pygame.K_a]:
         player.move_left()
+        return True
 
     if keys[pygame.K_w]:
         player.move_up()
+        return True
     
     if keys[pygame.K_s]:
         player.move_down()
+        return True
+    
+    return False
 
 
 class Object(pygame.sprite.Sprite):
@@ -87,6 +116,8 @@ def main():
 
     displayloadingscreen(WIN)
 
+    player = Player(450,250,54,88)
+
     while running:
 
         WIN.fill((255,255,255))
@@ -95,15 +126,20 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-
-        if (listindex < 9*PLAYERSPEED):
+            
+        '''if (listindex < 9*PLAYERSPEED):
             listindex += 1
         if listindex >= 44:
             listindex = 0
 
-        WIN.blit(playerleft[listindex//PLAYERSPEED],(440,212))
-            
+        WIN.blit(playerleft[listindex//PLAYERSPEED],(440,212))'''
+        
+        keypress = handlemovements(player)
+        player.update_sprite(keypress)
+        player.draw(WIN)
 
+    
+        
         pygame.display.update()
     
     pygame.quit()
