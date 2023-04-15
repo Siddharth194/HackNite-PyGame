@@ -6,7 +6,7 @@ FPS = 60
 LOADINGSCREENSPEED = 30 #higher the number, lower the speed
 LOADINGSCREENDELAY = 4 #higher the numnber, more the delay
 
-PLAYERSPEED = 5 #higher the number,slower the player
+PLAYERSPEED = 4 #higher the number,slower the player
 
 PLAYERVELOCITY = 16
 
