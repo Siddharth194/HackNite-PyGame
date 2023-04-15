@@ -23,7 +23,7 @@ class Player(pygame.sprite.Sprite):
         self.mask = None
         self.image = pygame.Surface((width+20,height*2),pygame.SRCALPHA)
         self.animationcount = 0
-        self.hp = 1
+        self.hp = 7
 
         self.offset = [0,0]
 
@@ -131,7 +131,7 @@ def handlemovements(player):
 
         if (-260+player.offset[1]) <= -250:
             player.offset[1] += PLAYERVELOCITY
-        
+
         return True
     
     if keys[pygame.K_s]:
@@ -139,7 +139,7 @@ def handlemovements(player):
 
         if (-260+player.offset[1]) >= -850:
             player.offset[1] -= PLAYERVELOCITY
-        
+
         return True
     
     return False
@@ -175,7 +175,7 @@ class Object(pygame.sprite.Sprite):
 
 def main():
 
-    pygame.mixer.music.load("resources/nightmare-on-imaginationland-8040 (mp3cut.net).mp3")
+    pygame.mixer.music.load("resources/Nightmare.mp3")
     pygame.mixer.music.play(-1)
 
     running = True
