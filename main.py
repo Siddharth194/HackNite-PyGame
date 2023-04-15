@@ -173,7 +173,7 @@ class Object(pygame.sprite.Sprite):
 
 def main():
 
-    pygame.mixer.music.load("resources/Nightmare.mp3")
+    pygame.mixer.music.load("resources/nightmare-on-imaginationland-8040 (mp3cut.net).mp3")
     pygame.mixer.music.play(-1)
 
     running = True
