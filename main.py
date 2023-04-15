@@ -270,33 +270,33 @@ def handlemovements(player):
     keys = pygame.key.get_pressed()
 
     if keys[pygame.K_d]:
-        player.move_right()
  
         if player.offset[0] >= -1810:
+            player.move_right()
             player.offset[0] -= PLAYERVELOCITY
 
         return (1,True)
     
     if keys[pygame.K_a]:
-        player.move_left()
 
         if player.offset[0] <= -3:
+            player.move_left()
             player.offset[0] += PLAYERVELOCITY
 
         return (2,True)
 
     if keys[pygame.K_w]:
-        player.move_up()
 
-        if (-260+player.offset[1]) <= -250:
+        if (-260+player.offset[1]) <= -240:
+            player.move_up()
             player.offset[1] += PLAYERVELOCITY
 
         return (3,True)
     
     if keys[pygame.K_s]:
-        player.move_down()
 
         if (-260+player.offset[1]) >= -850:
+            player.move_down()
             player.offset[1] -= PLAYERVELOCITY
 
         return (4,True)
@@ -452,12 +452,11 @@ def main():
             else:
                 drawobject(player,i,keypress)
         
-        if counter%100==0:
+        if counter%1000 == 0:
             rx=random.randint(0,900)
             ry=random.randint(0,600)
             enemy=Enemy(rx,ry,54,88,enemy_sprite)
             enemy_list.append(enemy)
-            print(enemy_list)
 
         for enemy in enemy_list:
             blitenemy(player,enemy)
@@ -465,6 +464,7 @@ def main():
 
         count -= 1
         counter += 1
+
         pygame.display.update()
     
     pygame.quit()
