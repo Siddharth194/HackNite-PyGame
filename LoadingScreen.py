@@ -1,17 +1,9 @@
 import pygame
 from basicfuncs import *
 from config import *
+from images import *
 
 pygame.init()
-
-def im(dest):
-    return pygame.image.load(dest)
-
-WIN = pygame.display.set_mode((900,600))
-
-loadingscreen = im('resources/LoadingScreen.png')
-
-lslist = [im('resources/loadingscreen/1.png'),im('resources/loadingscreen/2.png'),im('resources/loadingscreen/3.png'),im('resources/loadingscreen/4.png'),im('resources/loadingscreen/5.png'),im('resources/loadingscreen/6.png'),im('resources/loadingscreen/7.png'),im('resources/loadingscreen/8.png'),im('resources/loadingscreen/9.png'),im('resources/loadingscreen/10.png'),im('resources/loadingscreen/11.png'),im('resources/loadingscreen/12.png'),im('resources/loadingscreen/13.png'),im('resources/loadingscreen/14.png'),im('resources/loadingscreen/15.png'),im('resources/loadingscreen/16.png'),im('resources/loadingscreen/17.png'),im('resources/loadingscreen/18.png'),im('resources/loadingscreen/19.png'),im('resources/loadingscreen/20.png'),im('resources/loadingscreen/21.png'),im('resources/loadingscreen/22.png'),im('resources/loadingscreen/23.png'),im('resources/loadingscreen/24.png'),im('resources/loadingscreen/25.png'),im('resources/loadingscreen/26.png'),im('resources/loadingscreen/27.png'),im('resources/loadingscreen/28.png'),im('resources/loadingscreen/29.png')]
 
 def displayloadingscreen(WIN):
 
@@ -56,7 +48,7 @@ def displayloadingscreen(WIN):
                 doneload = 1
 
             if doneload:
-                templist = faderepeat(opacity,1,200,100,textfademultiplier)
+                templist = faderepeat(opacity,LOADINGSCREENDONEFADEOUT,200,50,textfademultiplier)
                 opacity = templist[0]
                 textfademultiplier = templist[1]
 
@@ -71,7 +63,9 @@ def displayloadingscreen(WIN):
             WIN.blit(Donefont1,(310,220))
             WIN.blit(startfont1, (120,360))
 
+            for proceedcheck in pygame.event.get():
+                if proceedcheck.type == pygame.KEYDOWN:
+                    running = False
+                    break
 
         pygame.display.update()
-
-displayloadingscreen(WIN)
