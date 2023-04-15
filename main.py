@@ -3,6 +3,7 @@ from config import * #long variable names written in caps are mostly imported fr
 from basicfuncs import *
 from LoadingScreen import *
 from images import *
+import random
 
 import os
 import sys
@@ -166,6 +167,104 @@ class Player(pygame.sprite.Sprite):
 
 
 
+
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self, x, y, width, height,sprite):
+        super().__init__()
+
+        self.X=x
+        self.Y=y
+        self.rect = pygame.Rect(x,y,width+50,height)
+        self.width = width
+        self.height = height
+        self.direction = "right"
+        self.mask = None
+        self.image = pygame.Surface((width+50,height),pygame.SRCALPHA)
+        self.animationcount = 0
+        self.fightcount=0
+        self.hp = 3
+        self.currentsprite = sprite
+        
+        #self.offset = [0,0]
+
+    def draw(self,WIN):        
+        self.image.fill((0,0,0,0))
+        self.image.blit(self.currentsprite,(0,0))
+        WIN.blit(self.image, (self.rect.x,self.rect.y))
+    
+    def move_up(self):
+
+        self.rect.y -= ENEMYVELOCITY
+        self.direction = "up"
+
+    def move_down(self):
+
+        self.rect.y += ENEMYVELOCITY
+        self.direction = "down"
+
+    def move_left(self):
+
+        self.rect.x -= ENEMYVELOCITY
+        self.direction = "left"
+
+    def move_right(self):
+
+        self.rect.x += ENEMYVELOCITY
+        self.direction = "right"
+    
+    def update_sprite(self):
+
+        if self.direction == "up":
+            enemy_spriteindex = 3
+        elif self.direction == "down":
+            enemy_spriteindex = 2
+        elif self.direction == "left":
+            enemy_spriteindex = 0
+        else:
+            enemy_spriteindex = 1
+        
+        
+        if self.animationcount < 9*ENEMYSPEED - 1:
+            self.animationcount += 1
+        else:
+            self.animationcount = 0
+
+        self.currentsprite = enemy_movementimgs[enemy_spriteindex][self.animationcount//ENEMYSPEED]
+
+    def enemymovements(self):
+        if self.direction=="right":
+            if self.rect.x>=self.X and self.rect.x<(self.X+SIDE):
+                self.move_right()
+                self.update_sprite()
+            else:
+                self.direction="down"
+                self.update_sprite()
+            
+        elif self.direction=="down":
+            if self.rect.y>=self.Y and self.rect.y<(self.Y+SIDE):
+                self.move_down()
+                self.update_sprite()
+            else:
+                self.direction="left"
+                self.update_sprite()
+        elif self.direction=="left":
+            if self.rect.x>self.X and self.rect.x<=(self.X+SIDE):
+                self.move_left()
+                self.update_sprite()
+            else:
+                self.direction="up"
+                self.update_sprite()
+        else:
+            if self.rect.y<=(self.Y+SIDE) and self.rect.y>self.Y:
+                self.move_up()
+                self.update_sprite()
+            else:
+                self.direction="right"
+                self.update_sprite()
+
+
+
+
 def handlemovements(player):
 
     keys = pygame.key.get_pressed()
@@ -209,13 +308,12 @@ def drawscreen(player):
     WIN.blit(map,(player.offset[0],-260 + player.offset[1]))
 
 def drawobject(player,object1,keypress):
-
-    #print(object1.rect.x + player.offset[0],object1.rect.y + player.offset[1])
     WIN.blit(object1.image, (object1.rect.x + player.offset[0],object1.rect.y + player.offset[1]))
 
+def blitenemy(player,enemy):
+    WIN.blit(enemy.image, (enemy.rect.x + player.offset[0],enemy.rect.y + player.offset[1]))
 
 def handleattack(player):
-
     keys = pygame.key.get_pressed()
 
     if keys[pygame.K_SPACE]:
@@ -247,9 +345,10 @@ class Object(pygame.sprite.Sprite):
 
 def main():
     count = 0
+    counter = 0
     pygame.mixer.music.load("resources/Nightmare.mp3")
     pygame.mixer.music.play(-1)
-
+    enemy_list=[]
     running = True
     clock = pygame.time.Clock()
     listindex = 0
@@ -280,9 +379,13 @@ def main():
         house.draw(WIN)
         hut.draw(WIN)
         shop.draw(WIN)
+ 
 
         WIN.fill((255,255,255))
         clock.tick(FPS)
+
+        for enemy in enemy_list:
+            enemy.draw(WIN)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -348,8 +451,20 @@ def main():
                 player.draw(WIN)
             else:
                 drawobject(player,i,keypress)
+        
+        if counter%100==0:
+            rx=random.randint(0,900)
+            ry=random.randint(0,600)
+            enemy=Enemy(rx,ry,54,88,enemy_sprite)
+            enemy_list.append(enemy)
+            print(enemy_list)
+
+        for enemy in enemy_list:
+            blitenemy(player,enemy)
+            enemy.enemymovements()
 
         count -= 1
+        counter += 1
         pygame.display.update()
     
     pygame.quit()
