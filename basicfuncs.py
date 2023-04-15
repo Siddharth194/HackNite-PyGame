@@ -26,3 +26,7 @@ def faderepeat(opacity,speed,ulimit,dlimit,mult):
 
         opacity += mult*speed
         return (opacity,mult)
+
+
+def im(dest):
+    return pygame.image.load(dest)
