@@ -20,15 +20,16 @@ class Player(pygame.sprite.Sprite):
         self.height = height
         self.direction = "front"
         self.mask = None
-        self.image = pygame.Surface((width,height),pygame.SRCALPHA)
+        self.image = pygame.Surface((width,height*2),pygame.SRCALPHA)
         self.animationcount = 0
-        self.hp = 8
+        self.hp = 1
 
     def draw(self,WIN):
-
-        None
-        #pygame.draw.rect(WIN,self.colour,self.rect)
-        WIN.blit(self.currentsprite, (self.rect.x,self.rect.y))
+        
+        self.image.fill((0,0,0,0))
+        self.image.blit(self.currentsprite,(0,0))
+        self.image.blit(self.reflectedsprite,(0,self.height))
+        WIN.blit(self.image, (self.rect.x,self.rect.y))
 
     def move_up(self):
 
@@ -68,6 +69,34 @@ class Player(pygame.sprite.Sprite):
                 self.animationcount = 0
 
         self.currentsprite = movementimgs[spriteindex][self.animationcount//PLAYERSPEED]
+
+
+        #from here, handling the reflection sprites
+        if self.hp//2 >= 3:
+            imglist = refld1
+        elif self.hp//2 >= 2:
+            imglist = refld2
+        elif self.hp//2 >= 1:
+            imglist = refld3
+        elif self.hp//2 >= 0:
+            imglist = refld4
+        
+        if self.hp//2 < 1:
+            self.maxdistortswitch = 0
+            if self.maxdistortswitch == 0:
+                self.maxdistortswitch = 1
+            else:
+                self.maxdistortswitch = 0
+
+            self.reflectedsprite = imglist[spriteindex][self.maxdistortswitch]
+        
+        elif self.hp//2 < 2:
+            self.reflectedsprite = imglist[spriteindex][self.animationcount//PLAYERSPEED]
+
+        else:
+            self.reflectedsprite = imglist[spriteindex][self.animationcount//PLAYERSPEED]
+
+
 
 def handlemovements(player):
 
