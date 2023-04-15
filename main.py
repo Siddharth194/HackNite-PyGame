@@ -26,7 +26,7 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.Surface((width+50,height*2),pygame.SRCALPHA)
         self.animationcount = 0
         self.fightcount=0
-        self.hp = 7
+        self.hp = 3
 
         self.offset = [0,0]
 
@@ -106,6 +106,8 @@ class Player(pygame.sprite.Sprite):
 
         self.reflectedsprite = pygame.transform.scale(self.reflectedsprite,(54,70))
     
+    
+
     def update_sprite_attack(self,keypress,count):
 
         if self.direction == "up":
@@ -116,7 +118,8 @@ class Player(pygame.sprite.Sprite):
             spriteindex = 0
         else:
             spriteindex = 1
-        
+
+
         if keypress:
             if self.fightcount < 6*FIGHTSPEED - 1:
                 self.fightcount += 1
@@ -130,7 +133,38 @@ class Player(pygame.sprite.Sprite):
             if count>0:
                 self.currentsprite = fightimgs[spriteindex][0]
 
+
+        if self.hp//2 >= 3:
+            imglist = rflist1
+        elif self.hp//2 >= 2:
+            imglist = rflist2
+        elif self.hp//2 >= 1:
+            imglist = rflist3
+        elif self.hp//2 >= 0:
+            imglist = rflist4
+
+        if self.hp//2 < 1:
+            self.maxdistortswitch = 0
+
+            if self.maxdistortswitch == 0: 
+                self.maxdistortswitch = 1
+            else:
+                self.maxdistortswitch = 0
+
+            self.reflectedsprite = imglist[spriteindex][self.maxdistortswitch]
+        
+        elif self.hp//2 < 2:
+            self.reflectedsprite = imglist[spriteindex][self.fightcount//FIGHTSPEED]
+
+        else:
+            self.reflectedsprite = imglist[spriteindex][self.fightcount//FIGHTSPEED]
+        
+        if count>0:
+            self.reflectedsprite = imglist[spriteindex][0]
+
         return count
+
+
 
 def handlemovements(player):
 
@@ -195,7 +229,7 @@ class Object(pygame.sprite.Sprite):
         super().__init__()
 
         self.rect = pygame.Rect(x,y,width,height)
-        self.buildingrect = pygame.Rect(x+60,y+height//2,width,height//4)
+        self.buildingrect = pygame.Rect(x+80,y+height//2,width-60,height//4)
         self.width = width
         self.height = height
         self.name = name
