@@ -102,3 +102,7 @@ Hut = im("resources/Objects/Hut.png")
 Shop = im("resources/Objects/ShopInn.png")
 Tree = im("resources/Objects/Tree.png")
 
+
+enemy_fightimgs=[efleft,efright,effront,efback]
+enemy_movementimgs = [enemyleft,enemyright,enemyfront,enemyback]
+enemy_sprite=im("resources/enemysprites/right1.png")
