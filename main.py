@@ -15,21 +15,24 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height):
         super().__init__()
 
-        self.rect = pygame.Rect(x,y,width,height)
+        self.rect = pygame.Rect(x,y,width+20,height)
         self.width = width
         self.height = height
         self.direction = "front"
         self.mask = None
-        self.image = pygame.Surface((width,height*2),pygame.SRCALPHA)
+        self.image = pygame.Surface((width+20,height*2),pygame.SRCALPHA)
         self.animationcount = 0
         self.hp = 1
+
+        self.offset = [0,0]
 
     def draw(self,WIN):
         
         self.image.fill((0,0,0,0))
         self.image.blit(self.currentsprite,(0,0))
-        self.image.blit(self.reflectedsprite,(0,self.height))
-        WIN.blit(self.image, (self.rect.x,self.rect.y))
+        self.image.blit(self.reflectedsprite,(0,self.height-5))
+        #WIN.blit(self.image, (self.rect.x,self.rect.y))
+        WIN.blit(self.image, (423,256))
 
     def move_up(self):
 
@@ -95,8 +98,12 @@ class Player(pygame.sprite.Sprite):
 
         else:
             self.reflectedsprite = imglist[spriteindex][self.animationcount//PLAYERSPEED]
+        
 
-
+        self.reflectedsprite = pygame.transform.scale(self.reflectedsprite,(54,70))
+    
+    def fight_sprite_update(self,kepress):
+        None
 
 def handlemovements(player):
 
@@ -104,21 +111,46 @@ def handlemovements(player):
 
     if keys[pygame.K_d]:
         player.move_right()
+ 
+        if player.offset[0] >= -1810:
+            player.offset[0] -= PLAYERVELOCITY
+
         return True
     
     if keys[pygame.K_a]:
         player.move_left()
+
+        if player.offset[0] <= -3:
+            player.offset[0] += PLAYERVELOCITY
+
         return True
 
     if keys[pygame.K_w]:
         player.move_up()
-        return True
+
+        if (-260+player.offset[1]) <= -250:
+            player.offset[1] += PLAYERVELOCITY
+            return True
     
     if keys[pygame.K_s]:
         player.move_down()
-        return True
+
+        if (-260+player.offset[1]) >= -850:
+            player.offset[1] -= PLAYERVELOCITY
+            return True
     
     return False
+
+
+def handleattack(player):
+    keys = pygame.key.get_pressed()
+
+    #if k
+
+
+def drawscreen(player):
+    WIN.blit(map,(player.offset[0],-260 + player.offset[1]))
+
 
 
 class Object(pygame.sprite.Sprite):
@@ -165,8 +197,9 @@ def main():
         
         keypress = handlemovements(player)
         player.update_sprite(keypress)
+        drawscreen(player)
         player.draw(WIN)
-
+        
     
         
         pygame.display.update()
