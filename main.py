@@ -10,6 +10,7 @@ import sys
 WIN = pygame.display.set_mode((WIN_WIDTH,WIN_HEIGHT))
 pygame.display.set_caption("HackNite Project")
 
+pygame.init()
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height):
@@ -171,6 +172,10 @@ class Object(pygame.sprite.Sprite):
 
 
 def main():
+
+    pygame.mixer.music.load("resources/Nightmare.mp3")
+    pygame.mixer.music.play(-1)
+
     running = True
     clock = pygame.time.Clock()
     listindex = 0
