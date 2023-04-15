@@ -131,14 +131,16 @@ def handlemovements(player):
 
         if (-260+player.offset[1]) <= -250:
             player.offset[1] += PLAYERVELOCITY
-            return True
+        
+        return True
     
     if keys[pygame.K_s]:
         player.move_down()
 
         if (-260+player.offset[1]) >= -850:
             player.offset[1] -= PLAYERVELOCITY
-            return True
+        
+        return True
     
     return False
 
