@@ -7,6 +7,7 @@ from images import *
 import os
 import sys
 
+
 WIN = pygame.display.set_mode((WIN_WIDTH,WIN_HEIGHT))
 pygame.display.set_caption("HackNite Project")
 
@@ -16,13 +17,14 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height):
         super().__init__()
 
-        self.rect = pygame.Rect(x,y,width+20,height)
+        self.rect = pygame.Rect(x,y,width+50,height)
         self.width = width
         self.height = height
         self.direction = "front"
         self.mask = None
-        self.image = pygame.Surface((width+20,height*2),pygame.SRCALPHA)
+        self.image = pygame.Surface((width+50,height*2),pygame.SRCALPHA)
         self.animationcount = 0
+        self.fightcount=0
         self.hp = 7
 
         self.offset = [0,0]
@@ -54,6 +56,7 @@ class Player(pygame.sprite.Sprite):
 
         self.rect.x += PLAYERVELOCITY
         self.direction = "right"
+
         
     def update_sprite(self,keypress):
 
@@ -103,8 +106,39 @@ class Player(pygame.sprite.Sprite):
 
         self.reflectedsprite = pygame.transform.scale(self.reflectedsprite,(54,70))
     
-    def fight_sprite_update(self,kepress):
-        None
+    
+
+
+    def update_sprite_attack(self,keypress,count):
+
+        if self.direction == "up":
+            spriteindex = 3
+        elif self.direction == "down":
+            spriteindex = 2
+        elif self.direction == "left":
+            spriteindex = 0
+        else:
+            spriteindex = 1
+        
+        
+
+        if keypress:
+        
+                if self.fightcount < 6*FIGHTSPEED - 1:
+                    self.fightcount += 1
+                else:
+                    self.fightcount = 0
+            
+                self.currentsprite = fightimgs[spriteindex][self.fightcount//FIGHTSPEED]
+
+                if self.fightcount//FIGHTSPEED == 5:
+                    count=20
+                if count>0:
+                    self.currentsprite = fightimgs[spriteindex][0]
+
+        return count
+            
+
 
 def handlemovements(player):
 
@@ -145,12 +179,12 @@ def handlemovements(player):
     return False
 
 
+
 def handleattack(player):
     keys = pygame.key.get_pressed()
-
-    #if k
-
-
+    if keys[pygame.K_KP_ENTER]:
+        return True
+    return False
 def drawscreen(player):
     WIN.blit(map,(player.offset[0],-260 + player.offset[1]))
 
@@ -174,7 +208,7 @@ class Object(pygame.sprite.Sprite):
 
 
 def main():
-
+    count=0
     pygame.mixer.music.load("resources/Nightmare.mp3")
     pygame.mixer.music.play(-1)
 
@@ -187,7 +221,7 @@ def main():
     player = Player(450,250,54,88)
 
     while running:
-
+        
         WIN.fill((255,255,255))
         clock.tick(FPS)
 
@@ -202,15 +236,17 @@ def main():
 
         WIN.blit(playerleft[listindex//PLAYERSPEED],(440,212))'''
         
-        keypress = handlemovements(player)
-        player.update_sprite(keypress)
+        keypress1 = handlemovements(player)
+        player.update_sprite(keypress1)
+        if not keypress1:
+            keypress2=handleattack(player)
+            count=player.update_sprite_attack(keypress2,count)
         drawscreen(player)
         player.draw(WIN)
         
     
-        
+        count=count-1
         pygame.display.update()
-    
     pygame.quit()
 
     
