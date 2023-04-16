@@ -3,6 +3,8 @@ from config import * #long variable names written in caps are mostly imported fr
 from basicfuncs import *
 from LoadingScreen import *
 from images import *
+from MenuScreen import *
+
 import random
 import math
 
@@ -11,19 +13,14 @@ PLAYERVELOCITY = 3
 
 WIN = pygame.display.set_mode((WIN_WIDTH,WIN_HEIGHT))
 pygame.display.set_caption("HackNite Project")
-pygame.mixer.music.load("resources/Nightmare.mp3")
-pygame.mixer.music.play(-1)
-
 
 pygame.init()
-
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height):
         super().__init__()
 
         self.rect = pygame.Rect(x,y,width+50,height)
-        self.hprect=pygame.Rect(x,y,width//2,height//1.2)
         self.width = width
         self.height = height
         self.direction = "down"
@@ -31,7 +28,9 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.Surface((width+50,height*2),pygame.SRCALPHA)
         self.animationcount = 0
         self.fightcount=0
-        self.hp = 7
+        self.hp = 8
+
+        self.hitbox = pygame.Rect(x,y,width-20,height-10)
 
         self.offset = [0,0]
 
@@ -84,16 +83,16 @@ class Player(pygame.sprite.Sprite):
 
 
         #from here, handling the reflection sprites
-        if self.hp//2 >= 3:
+        if (self.hp-1)//2 >= 3:
             imglist = refld1
-        elif self.hp//2 >= 2:
+        elif (self.hp-1)//2 >= 2:
             imglist = refld2
-        elif self.hp//2 >= 1:
+        elif (self.hp-1)//2 >= 1:
             imglist = refld3
         else:
             imglist = refld4
         
-        if self.hp//2 < 1:
+        if (self.hp-1)//2 < 1:
             self.maxdistortswitch = 0
             if self.maxdistortswitch == 0:
                 self.maxdistortswitch = 1
@@ -102,7 +101,7 @@ class Player(pygame.sprite.Sprite):
 
             self.reflectedsprite = imglist[spriteindex][self.maxdistortswitch]
         
-        elif self.hp//2 < 2:
+        elif self.hp-1//2 < 2:
             self.reflectedsprite = imglist[spriteindex][self.animationcount//PLAYERSPEED]
 
         else:
@@ -111,7 +110,6 @@ class Player(pygame.sprite.Sprite):
 
         self.reflectedsprite = pygame.transform.scale(self.reflectedsprite,(54,70))
     
-
     
 
     def update_sprite_attack(self,keypress,count):
@@ -140,16 +138,16 @@ class Player(pygame.sprite.Sprite):
                 self.currentsprite = fightimgs[spriteindex][0]
 
 
-        if self.hp//2 >= 3:
+        if (self.hp-1)//2 >= 3:
             imglist = rflist1
-        elif self.hp//2 >= 2:
+        elif (self.hp-1)//2 >= 2:
             imglist = rflist2
-        elif self.hp//2 >= 1:
+        elif (self.hp-1)//2 >= 1:
             imglist = rflist3
         else:
             imglist = rflist4
 
-        if self.hp//2 < 1:
+        if (self.hp-1)//2 < 1:
             self.maxdistortswitch = 0
 
             if self.maxdistortswitch == 0: 
@@ -159,7 +157,7 @@ class Player(pygame.sprite.Sprite):
 
             self.reflectedsprite = imglist[spriteindex][self.maxdistortswitch]
         
-        elif self.hp//2 < 2:
+        elif (self.hp-1)//2 < 2:
             self.reflectedsprite = imglist[spriteindex][self.fightcount//FIGHTSPEED]
 
         else:
@@ -212,7 +210,6 @@ class Enemy(pygame.sprite.Sprite):
         self.image.fill((0,0,0,0))
         self.image.blit(self.currentsprite,(0,0))
         WIN.blit(self.image, (self.rect.x,self.rect.y))
-        
     
     def move_up(self):
 
@@ -254,9 +251,8 @@ class Enemy(pygame.sprite.Sprite):
         self.currentsprite = enemy_movementimgs[enemy_spriteindex][self.animationcount//ENEMYSPEED]
 
     def enemymovements(self,alert):
-
-        if not self.dead:
         
+        if not self.dead:
             if not alert:
                 if self.direction=="right":
                     if self.rect.x>=self.X and self.rect.x<(self.X+SIDE):
@@ -312,13 +308,14 @@ class Enemy(pygame.sprite.Sprite):
         
         if ecount > 0:
             self.currentsprite = enemy_fightimgs[spriteindex][0]
-
+        
     def death(self):
         self.animationcount = 0
         if self.animationcount < 6*ENEMYSPEED - 1:
             self.animationcount += 1
         self.dead=True
         self.currentsprite = enemy_death[self.animationcount//ENEMYSPEED]
+
 
 def handlemovements(player):
 
@@ -362,7 +359,7 @@ def handlemovements(player):
 def drawscreen(player):
     WIN.blit(map,(player.offset[0],-260 + player.offset[1]))
 
-def drawobject(player,object1):
+def drawobject(player,object1,keypress):
     WIN.blit(object1.image, (object1.rect.x + player.offset[0],object1.rect.y + player.offset[1]))
 
 def drawarrow(player,object1):
@@ -433,7 +430,6 @@ class Object(pygame.sprite.Sprite):
 
         self.rect = pygame.Rect(x,y,width,height)
         self.buildingrect = pygame.Rect(x+80,y+height//2,width-60,height//4)
-        #self.hp_buildingrect = pygame.Rect(x+80,y+height//2,width,height//4)
         self.width = width
         self.height = height
         self.name = name
@@ -446,12 +442,14 @@ class Object(pygame.sprite.Sprite):
         self.image.fill((0,0,0,0))
         self.image.blit(self.currentsprite,(0,0))
         WIN.blit(self.image, (self.rect.x,self.rect.y))
+
 def health_pickup(player,health_pack,keypress):
     if health_pack.buildingrect.colliderect(player.rect):
     #if player.hprect.colliderect(health_pack.buildingrect):
         player.hp+=1
         return True
     return False
+
 def collision(player,object1,keypress):
     if object1.buildingrect.colliderect(player.rect):
             if keypress[0] == 1:
@@ -474,17 +472,15 @@ def main():
     ecount = 0
     rotarrow = arrow
     arrowcd = 0
-    counter=0
-    
-
-    random_health=[[(450,800),(230,842)],[(800,1560),(520,565)],[(800,1560),(812,840)]]
     health_packs=[]
-    
+
+    pygame.mixer.music.load("resources/Nightmare.mp3")
+    pygame.mixer.music.play(-1)
     enemy_list=[]
     running = True
     clock = pygame.time.Clock()
     keypress = (2,False)
-
+    random_health=[[(450,800),(230,842)],[(800,1560),(520,565)],[(800,1560),(812,840)]]
     player = Player(450,250,54,88)
     house = Object(900,150,432,415,House)
     hut = Object(1300,650,232,212,Hut)
@@ -497,12 +493,9 @@ def main():
         ry=random.randint(p[1][0],p[1][1])
         healthobj=Object(rx,ry,100,100,Health)
         health_packs.append(healthobj)
-    '''for health in health_packs:
-        print(health.rect.x,health.rect.y)'''
-    
+        
 
-
-    enemy_list.append(Enemy(random.randint(450,550),229,54,88,enemy_sprite))
+    enemy_list.append(Enemy(random.randint(450,550),530,54,88,enemy_sprite))
     alert.append(False)
     enemy_list.append(Enemy(random.randint(450,900),530,54,88,enemy_sprite))
     alert.append(False)
@@ -531,7 +524,6 @@ def main():
 
     while running:
 
-
         arrowcheck = 0
 
         initialpos = (player.rect.x,player.rect.y)
@@ -542,14 +534,11 @@ def main():
         for health in health_packs:
             health.draw(WIN)
 
-
         WIN.fill((255,255,255))
         clock.tick(FPS)
 
         for enemy in enemy_list:
             enemy.draw(WIN)
-
-        
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -558,11 +547,6 @@ def main():
         collision(player,house,keypress)
         collision(player,hut,keypress)
         collision(player,shop,keypress)
-        '''collision(player,health_packs[0],keypress)
-        collision(player,health_packs[1],keypress)
-        collision(player,health_packs[2],keypress)
-        collision(player,health_packs[3],keypress)
-        collision(player,health_packs[4],keypress)'''
 
         for health_pack in health_packs:
             if health_pickup(player,health_pack,keypress):
@@ -579,23 +563,23 @@ def main():
         drawscreen(player)
 
         objectlist = ysort(player,house,shop,hut,health_packs)
-        #objectlist = ysort(player,house,shop,hut,health_packs)
 
         for i in objectlist:
 
             if i == player:
                 player.draw(WIN)
-            else:  
-                drawobject(player,i)
+            else:
+                drawobject(player,i,keypress)
+        
 
         for e in range(len(enemy_list)):
             blitenemy(player,enemy_list[e])
             enemy_list[e].enemymovements(alert[e])
-            #if not enemy_list[e].dead:
+
             alert[e] = enemyattack(player,enemy_list[e])
 
         for i in range(len(enemy_list)):
-            if enemy_list[i].dead==False:
+            if enemy_list[i].dead == False:
                 alert[i] = enemyattack(player,enemy_list[i])
                 if alert[i]:
                     rotarrow = pygame.transform.rotate(arrow,angle)
@@ -610,16 +594,13 @@ def main():
                         arrowcd -= 1
                         arrowtravel(arrowobj,player,angle,initialpos)
                     
-                    if arrowobj.rect.colliderect(player.rect):
-                        player.hp -= 0.001
+                    if arrowobj.rect.colliderect(player.hitbox):
+                        player.hp -= 0.0001
                         arrowcheck = 1
         
-        print(player.hp)
         if not arrowcheck:
             player.hp = int(player.hp)
 
-        
-        #alive_enemies=[]
         if len(enemy_list)!=0:
             
             for enemy in enemy_list:
@@ -630,33 +611,27 @@ def main():
                     else:
                         if enemy.hp<=0:
                             enemy.death()
-                            #blitenemy(player,enemy)
-
-                            '''blitenemy(player,enemy)
-                            enemy.enemymovements(alert)'''
-                    #alive_enemies.append(i)
+                            
                         else:
                             blitenemy(player,enemy)
                             enemy.enemymovements(alert)
-                            
-
-        #temp=[]
-        '''for i in alive_enemies:
-            temp.append(enemy_list[i])
-        enemy_list=temp'''
-
-        #print(player.rect.x,player.rect.y)
-        count-=1
         
-        
-
+        ecount -= 1
+        count -= 1
 
         pygame.display.update()
+
+        if player.hp == 0:
+            print("dead")
+            for i in range(300):
+                WIN.blit(im("resources/gameover.png"),(0,0))
+                pygame.display.update()
+            break
     
     pygame.quit()
 
-
 displayloadingscreen(WIN)
 displaymenuscreen(WIN)
-main()
 
+
+main()
