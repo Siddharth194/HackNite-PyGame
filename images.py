@@ -106,3 +106,9 @@ Tree = im("resources/Objects/Tree.png")
 enemy_fightimgs=[efleft,efright,effront,efback]
 enemy_movementimgs = [enemyleft,enemyright,enemyfront,enemyback]
 enemy_sprite=im("resources/enemysprites/right1.png")
+
+arrow = im("resources/arrow.png")
+
+enemy_death=[im("resources/enemysprites/deathpics/death1.png"),im("resources/enemysprites/deathpics/death2.png"),im("resources/enemysprites/deathpics/death3.png"),im("resources/enemysprites/deathpics/death4.png"),im("resources/enemysprites/deathpics/death5.png"),im("resources/enemysprites/deathpics/death6.png")]
+
+Health = im("resources/Objects/health.png")
