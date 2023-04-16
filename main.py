@@ -4,9 +4,8 @@ from basicfuncs import *
 from LoadingScreen import *
 from images import *
 import random
+import math
 
-import os
-import sys
 
 PLAYERVELOCITY = 3
 
@@ -27,7 +26,7 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.Surface((width+50,height*2),pygame.SRCALPHA)
         self.animationcount = 0
         self.fightcount=0
-        self.hp = 3
+        self.hp = 7
 
         self.offset = [0,0]
 
@@ -86,7 +85,7 @@ class Player(pygame.sprite.Sprite):
             imglist = refld2
         elif self.hp//2 >= 1:
             imglist = refld3
-        elif self.hp//2 >= 0:
+        else:
             imglist = refld4
         
         if self.hp//2 < 1:
@@ -141,7 +140,7 @@ class Player(pygame.sprite.Sprite):
             imglist = rflist2
         elif self.hp//2 >= 1:
             imglist = rflist3
-        elif self.hp//2 >= 0:
+        else:
             imglist = rflist4
 
         if self.hp//2 < 1:
@@ -165,7 +164,21 @@ class Player(pygame.sprite.Sprite):
 
         return count
 
+ 
+def activateenemy(player,enemy):
+    dist = ((player.rect.x - enemy.rect.x)**2 + (player.rect.y - enemy.rect.y)**2)**0.5
 
+    if dist <= 300:
+        return True
+    
+    else:
+        return False
+
+def enemyattack(player,enemy):
+    if activateenemy(player,enemy):
+        return True
+    else:
+        return False
 
 
 class Enemy(pygame.sprite.Sprite):
@@ -184,6 +197,7 @@ class Enemy(pygame.sprite.Sprite):
         self.fightcount=0
         self.hp = 3
         self.currentsprite = sprite
+        self.velocity = ENEMYVELOCITY
         
         #self.offset = [0,0]
 
@@ -194,22 +208,22 @@ class Enemy(pygame.sprite.Sprite):
     
     def move_up(self):
 
-        self.rect.y -= ENEMYVELOCITY
+        self.rect.y -= self.velocity
         self.direction = "up"
 
     def move_down(self):
 
-        self.rect.y += ENEMYVELOCITY
+        self.rect.y += self.velocity
         self.direction = "down"
 
     def move_left(self):
 
-        self.rect.x -= ENEMYVELOCITY
+        self.rect.x -= self.velocity
         self.direction = "left"
 
     def move_right(self):
 
-        self.rect.x += ENEMYVELOCITY
+        self.rect.x += self.velocity
         self.direction = "right"
     
     def update_sprite(self):
@@ -231,38 +245,63 @@ class Enemy(pygame.sprite.Sprite):
 
         self.currentsprite = enemy_movementimgs[enemy_spriteindex][self.animationcount//ENEMYSPEED]
 
-    def enemymovements(self):
-        if self.direction=="right":
-            if self.rect.x>=self.X and self.rect.x<(self.X+SIDE):
-                self.move_right()
-                self.update_sprite()
+    def enemymovements(self,alert):
+        
+        if not alert:
+            if self.direction=="right":
+                if self.rect.x>=self.X and self.rect.x<(self.X+SIDE):
+                    self.move_right()
+                    self.update_sprite()
+                else:
+                    self.direction="down"
+                    self.update_sprite()
+                
+            elif self.direction=="down":
+                if self.rect.y>=self.Y and self.rect.y<(self.Y+SIDE):
+                    self.move_down()
+                    self.update_sprite()
+                else:
+                    self.direction="left"
+                    self.update_sprite()
+
+            elif self.direction=="left":
+                if self.rect.x>self.X and self.rect.x<=(self.X+SIDE):
+                    self.move_left()
+                    self.update_sprite()
+                else:
+                    self.direction="up"
+                    self.update_sprite()
             else:
-                self.direction="down"
-                self.update_sprite()
-            
-        elif self.direction=="down":
-            if self.rect.y>=self.Y and self.rect.y<(self.Y+SIDE):
-                self.move_down()
-                self.update_sprite()
-            else:
-                self.direction="left"
-                self.update_sprite()
-        elif self.direction=="left":
-            if self.rect.x>self.X and self.rect.x<=(self.X+SIDE):
-                self.move_left()
-                self.update_sprite()
-            else:
-                self.direction="up"
-                self.update_sprite()
+                if self.rect.y<=(self.Y+SIDE) and self.rect.y>self.Y:
+                    self.move_up()
+                    self.update_sprite()
+                else:
+                    self.direction="right"
+                    self.update_sprite()
+
+    def update_sprite_attack_enemy(self,ecount,angle):
+
+        if angle >45 and angle <135:
+            spriteindex = 0 #left
+        elif angle <45 and angle>-45:
+            spriteindex = 3 #up
+        elif angle <-45 and angle >-135:
+            spriteindex = 1
         else:
-            if self.rect.y<=(self.Y+SIDE) and self.rect.y>self.Y:
-                self.move_up()
-                self.update_sprite()
-            else:
-                self.direction="right"
-                self.update_sprite()
+            spriteindex = 2
+        
+        if self.fightcount < 9*ENEMYSPEED-1:
+            self.fightcount += 1
+        else:
+            self.fightcount = 0
+        
+        self.currentsprite = enemy_fightimgs[spriteindex][self.fightcount//ENEMYSPEED]
 
-
+        if self.fightcount == 9*ENEMYSPEED - 1:
+            ecount = 80
+        
+        if ecount > 0:
+            self.currentsprite = enemy_fightimgs[spriteindex][0]
 
 
 def handlemovements(player):
@@ -310,6 +349,9 @@ def drawscreen(player):
 def drawobject(player,object1,keypress):
     WIN.blit(object1.image, (object1.rect.x + player.offset[0],object1.rect.y + player.offset[1]))
 
+def drawarrow(player,object1):
+    WIN.blit(object1.image, (object1.rect.x,object1.rect.y))
+
 def blitenemy(player,enemy):
     WIN.blit(enemy.image, (enemy.rect.x + player.offset[0],enemy.rect.y + player.offset[1]))
 
@@ -320,6 +362,47 @@ def handleattack(player):
         return True
     
     return False
+
+def findangle(player,enemy):
+
+    vectormag = ((player.rect.x-enemy.rect.x)**2 + ((player.rect.y+20) - enemy.rect.y)**2)**0.5
+    enemyplayer = pygame.math.Vector2(player.rect.x - enemy.rect.x, (player.rect.y+20) - enemy.rect.y)
+    arrowvector = pygame.math.Vector2(0,-1)
+    
+    cosine = (enemyplayer.dot(arrowvector))/vectormag
+    angle = math.acos(cosine)
+
+    if (player.rect.x - enemy.rect.x)>0:
+        angle = -angle
+
+    return int(angle*57.3)
+
+'''
+class Arrow(pygame.sprite.Sprite):
+    def __init__(self,x,y,sprite):
+        super.__init__()
+        self.width = sprite.get_width()
+        self.height = sprite.get_height()
+        self.rect = pygame.Rect(x,y,self.width,self.height)
+        self.sprite = sprite
+        self.image = pygame.Surface((self.width,self.height),pygame.SRCALPHA)
+    
+    def draw(self,WIN):
+
+        self.image.fill((0,0,0,0))
+        self.image.blit(self.sprite)'''
+
+def arrowtravel(arrowobj,player,angle,initialpos):
+    velx = -ARROWVELOCITY * math.sin(angle/57.3)
+    vely = -ARROWVELOCITY * math.cos(angle/57.3)
+
+    arrowobj.rect.x += velx + initialpos[0] - player.rect.x #- initialoffset[0] + player.offset[0] #velx
+    arrowobj.rect.y += vely + initialpos[1] - player.rect.y#- initialoffset[1] + player.offset[1]
+
+    arrowobj.draw(WIN)
+
+    return arrowobj
+
 
 class Object(pygame.sprite.Sprite):
 
@@ -339,32 +422,53 @@ class Object(pygame.sprite.Sprite):
         
         self.image.fill((0,0,0,0))
         self.image.blit(self.currentsprite,(0,0))
-        #WIN.blit(self.image, (self.rect.x,self.rect.y))
         WIN.blit(self.image, (self.rect.x,self.rect.y))
+
+def collision(player,object1,keypress):
+    if object1.buildingrect.colliderect(player.rect):
+            if keypress[0] == 1:
+                player.rect.right = object1.buildingrect.left
+                player.offset[0] += PLAYERVELOCITY
+            elif keypress[0] == 2:
+                player.offset[0] -= PLAYERVELOCITY
+                player.rect.left = object1.buildingrect.right
+            elif keypress[0] == 3:
+                player.rect.top = object1.buildingrect.bottom
+                player.offset[1] -= PLAYERVELOCITY
+            elif keypress[0] == 4:
+                player.offset[1] += PLAYERVELOCITY
+                player.rect.bottom = object1.buildingrect.top
 
 
 def main():
+    alert = []
     count = 0
-    counter = 0
+    ecount = 0
+    rotarrow = arrow
+    arrowcd = 0
+
     pygame.mixer.music.load("resources/Nightmare.mp3")
     pygame.mixer.music.play(-1)
     enemy_list=[]
     running = True
     clock = pygame.time.Clock()
-    listindex = 0
-
-    #displayloadingscreen(WIN)
+    keypress = (2,False)
 
     player = Player(450,250,54,88)
     house = Object(900,150,432,415,House)
     hut = Object(1300,650,232,212,Hut)
     shop = Object(1500,250,692,317,Shop)
 
-            
     enemy_list.append(Enemy(random.randint(450,550),229,54,88,enemy_sprite))
+    alert.append(False)
     enemy_list.append(Enemy(random.randint(450,900),530,54,88,enemy_sprite))
+    alert.append(False)
     enemy_list.append(Enemy(random.randint(1750,1950),530,54,88,enemy_sprite))
+    alert.append(False)
 
+    arrowobj = Object(enemy_list[0].rect.x,enemy_list[0].rect.y,rotarrow.get_width(),rotarrow.get_height(),rotarrow)
+    angle = findangle(player,enemy_list[0])
+    
     def ysort(player,house,shop,hut):
         
         check = 0
@@ -380,11 +484,14 @@ def main():
         return objectlist
 
     while running:
- 
+
+        arrowcheck = 0
+
+        initialpos = (player.rect.x,player.rect.y)
+
         house.draw(WIN)
         hut.draw(WIN)
         shop.draw(WIN)
- 
 
         WIN.fill((255,255,255))
         clock.tick(FPS)
@@ -396,47 +503,9 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
 
-        if house.buildingrect.colliderect(player.rect):
-            if keypress[0] == 1:
-                player.rect.right = house.buildingrect.left
-                player.offset[0] += PLAYERVELOCITY
-            elif keypress[0] == 2:
-                player.offset[0] -= PLAYERVELOCITY
-                player.rect.left = house.buildingrect.right
-            elif keypress[0] == 3:
-                player.rect.top = house.buildingrect.bottom
-                player.offset[1] -= PLAYERVELOCITY
-            elif keypress[0] == 4:
-                player.offset[1] += PLAYERVELOCITY
-                player.rect.bottom = house.buildingrect.top
-        
-        if hut.buildingrect.colliderect(player.rect):
-            if keypress[0] == 1:
-                player.rect.right = hut.buildingrect.left
-                player.offset[0] += PLAYERVELOCITY
-            elif keypress[0] == 2:
-                player.offset[0] -= PLAYERVELOCITY
-                player.rect.left = hut.buildingrect.right
-            elif keypress[0] == 3:
-                player.rect.top = hut.buildingrect.bottom
-                player.offset[1] -= PLAYERVELOCITY
-            elif keypress[0] == 4:
-                player.offset[1] += PLAYERVELOCITY
-                player.rect.bottom = hut.buildingrect.top
-        
-        if shop.buildingrect.colliderect(player.rect):
-            if keypress[0] == 1:
-                player.rect.right = shop.buildingrect.left
-                player.offset[0] += PLAYERVELOCITY
-            elif keypress[0] == 2:
-                player.offset[0] -= PLAYERVELOCITY
-                player.rect.left = shop.buildingrect.right
-            elif keypress[0] == 3:
-                player.rect.top = shop.buildingrect.bottom
-                player.offset[1] -= PLAYERVELOCITY
-            elif keypress[0] == 4:
-                player.offset[1] += PLAYERVELOCITY
-                player.rect.bottom = shop.buildingrect.top
+        collision(player,house,keypress)
+        collision(player,hut,keypress)
+        collision(player,shop,keypress)
 
         keypress = handlemovements(player)
         
@@ -457,21 +526,36 @@ def main():
             else:
                 drawobject(player,i,keypress)
         
-        '''if counter%1000 == 0:
-            rx=random.randint(0,900)
-            ry=random.randint(0,600)
-            enemy=Enemy(rx,ry,54,88,enemy_sprite)
-            enemy_list.append(enemy)'''
 
+        for e in range(len(enemy_list)):
+            blitenemy(player,enemy_list[e])
+            enemy_list[e].enemymovements(alert[e])
 
-        for enemy in enemy_list:
-            blitenemy(player,enemy)
-            enemy.enemymovements()
+            alert[e] = enemyattack(player,enemy_list[e])
 
-        count -= 1
-        counter += 1
+        for i in range(len(enemy_list)):
+            alert[i] = enemyattack(player,enemy_list[i])
+            if alert[i]:
+                rotarrow = pygame.transform.rotate(arrow,angle)
+                enemy_list[i].update_sprite_attack_enemy(ecount,angle)
+                
+                if arrowcd == 0:
+                    arrowobj = Object(enemy_list[i].rect.x + player.offset[0],enemy_list[i].rect.y + player.offset[1],pygame.transform.rotate(arrow,angle).get_width(),pygame.transform.rotate(arrow,angle).get_height(),pygame.transform.rotate(arrow,angle))
+                    arrowcd = 200
+                    angle = findangle(player,enemy_list[i])
+                    arrowtravel(arrowobj,player,angle,initialpos)
+                else:
+                    arrowcd -= 1
+                    arrowtravel(arrowobj,player,angle,initialpos)
+                
+                if arrowobj.rect.colliderect(player.rect):
+                    player.hp -= 0.0001
+                    arrowcheck = 1
+        
+        if not arrowcheck:
+            player.hp = int(player.hp)
+            print(player.hp)
 
-        print((player.rect.x,player.rect.y))
         pygame.display.update()
     
     pygame.quit()
