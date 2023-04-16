@@ -360,6 +360,11 @@ def main():
     hut = Object(1300,650,232,212,Hut)
     shop = Object(1500,250,692,317,Shop)
 
+            
+    enemy_list.append(Enemy(random.randint(450,550),229,54,88,enemy_sprite))
+    enemy_list.append(Enemy(random.randint(450,900),530,54,88,enemy_sprite))
+    enemy_list.append(Enemy(random.randint(1750,1950),530,54,88,enemy_sprite))
+
     def ysort(player,house,shop,hut):
         
         check = 0
@@ -452,11 +457,12 @@ def main():
             else:
                 drawobject(player,i,keypress)
         
-        if counter%1000 == 0:
+        '''if counter%1000 == 0:
             rx=random.randint(0,900)
             ry=random.randint(0,600)
             enemy=Enemy(rx,ry,54,88,enemy_sprite)
-            enemy_list.append(enemy)
+            enemy_list.append(enemy)'''
+
 
         for enemy in enemy_list:
             blitenemy(player,enemy)
@@ -465,6 +471,7 @@ def main():
         count -= 1
         counter += 1
 
+        print((player.rect.x,player.rect.y))
         pygame.display.update()
     
     pygame.quit()
